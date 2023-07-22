@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>3D Plot</title>
+  <style>
+    body { margin: 0; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+  <script src="https://threejsfundamentals.org/threejs/resources/threejs/r110/examples/js/controls/OrbitControls.js"></script>
+
+  <script>
+    let scene, camera, renderer, controls;
+    let geometry, material, line;
+
+    init();
+    animate();
+
+    function init() {
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // Orbit Controls
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true; 
+      controls.dampingFactor = 0.25; 
+      controls.enableZoom = true;
+
+      //console.log(csvContent)
+      // Use the passed CSV content
+      let csvContent = <%- datasetContent %>;
+
+      // Parse the CSV content and create points
+      let lines = csvContent.split('\n');
+      let material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+      let boundingBox = new THREE.Box3();
+
+      for (let line of lines) {
+        let values = line.split(',');
+        let points = [];
+        for (let i = 0; i < values.length; i += 3) {
+          let x = values[i];
+          let y = values[i + 1];
+          let z = values[i + 2];
+          points.push(new THREE.Vector3(x, y, z));
+        }
+        let geometry = new THREE.BufferGeometry().setFromPoints(points);
+        let nline = new THREE.Line(geometry, material);
+        scene.add(nline);
+
+        // After creating your geometry
+        geometry.computeBoundingBox();
+        boundingBox.union(geometry.boundingBox);
+      }
+
+      let center = new THREE.Vector3();
+      boundingBox.getCenter(center);
+
+      controls.target = center; // set the center of OrbitControls
+
+      let size = new THREE.Vector3();
+      boundingBox.getSize(size);
+
+      let boxHelper = new THREE.Box3Helper(boundingBox, 0xffff00);
+      scene.add(boxHelper);
+
+
+      let maxDim = Math.max(size.x, size.y, size.z);
+      let distance = maxDim * 1.5; // Adjust the multiplier as needed
+
+      let fov = 2 * Math.atan((maxDim / 2) / distance) * (180 / Math.PI); 
+
+      camera.position.copy(center);
+      camera.position.x += size.x;
+      camera.position.y += size.y;
+      camera.position.z += size.z * 1.5; // Move the camera back so the line is in view
+
+      camera.lookAt(center); // Make the camera look at the center of the line
+
+      camera.updateProjectionMatrix();
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update(); // required if controls.enableDamping = true, or if controls.autoRotate = true
+      renderer.render(scene, camera);
+    }
+  </script>
+</body>
+</html>

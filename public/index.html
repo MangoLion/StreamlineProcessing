@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Form</title>
+</head>
+<body>
+  <form action="/submit" method="POST" enctype="multipart/form-data">
+
+    <label for="numberOfStreamlines">Number of streamlines:</label>
+    <input type="number" name="numberOfStreamlines" id="numberOfStreamlines" required><br>
+
+    <label for="stepSize">Step size:</label>
+    <input type="number" name="stepSize" id="stepSize" step="0.01" required><br>
+
+    <label for="maxLength">Max length:</label>
+    <input type="number" name="maxLength" id="maxLength" step="0.01" required><br>
+    <label for="dataset">Upload Dataset File:</label>
+  <input type="file" name="dataset" id="dataset"><br>
+
+    <input type="submit" value="Submit">
+  </form>
+</body>
+</html>
